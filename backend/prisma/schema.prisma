@@ -1,0 +1,86 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Building {
+  id              String            @id @default(uuid())
+  name            String
+  type            String
+  capacity        Int
+  baselineEnergy  Float
+  baselineWater   Float
+  locationCoords  String
+  records         ResourceRecord[]
+  anomalies       Anomaly[]
+  tickets         MaintenanceTicket[]
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+}
+
+model ResourceRecord {
+  id              String   @id @default(uuid())
+  buildingId      String
+  building        Building @relation(fields: [buildingId], references: [id])
+  resourceType    String
+  consumptionValue Float
+  timestamp       DateTime @default(now())
+}
+
+model Anomaly {
+  id                String   @id @default(uuid())
+  buildingId        String
+  building          Building @relation(fields: [buildingId], references: [id])
+  metricType        String
+  thresholdExceeded Float
+  severity          String
+  status            String   @default("OPEN")
+  createdAt         DateTime @default(now())
+}
+
+model MaintenanceTicket {
+  id          String   @id @default(uuid())
+  buildingId  String
+  building    Building @relation(fields: [buildingId], references: [id])
+  reportedBy  String
+  issueType   String
+  imageUrl    String?
+  status      String   @default("OPEN")
+  priority    String
+  assignedTo  String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model EcoLeaderboard {
+  id          String   @id @default(uuid())
+  entityName  String
+  entityType  String
+  points      Int      @default(0)
+  rank        Int?
+  period      String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model EmissionFactor {
+  id           String   @id @default(uuid())
+  resourceType String   @unique
+  unit         String
+  co2eFactor   Float
+  updatedAt    DateTime @updatedAt
+}
+
+model SimulationScenario {
+  id               String   @id @default(uuid())
+  createdBy        String
+  scenarioName     String
+  parametersJson   String
+  projectedSavings Float
+  createdAt        DateTime @default(now())
+}
+
